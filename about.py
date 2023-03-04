@@ -89,7 +89,7 @@ class About_window(QWidget):
         self.scroll_lay.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.scroll_lay.setWindowIcon(QIcon("image/logo.ico"))
         self.scroll_lay.setWindowTitle("About Sitemap cheker")
-        self.scroll_lay.show()
+
 
 
     def init_data(self):

@@ -22,7 +22,9 @@ class GUI_worker(MainWnd):
         self.project_name_ready = False
         self.regex_patern = {}
         self.read_config_data()
+        self.about_window_widget = About_window(self)
         self.init_data()
+
 
     def read_config_data(self):
         with open("config.cfg", "r") as f:
@@ -43,7 +45,7 @@ class GUI_worker(MainWnd):
         self.select_csv_button.setFixedWidth(100)
         self.select_csv_label.setFixedWidth(100)
         self.about_button.setFixedWidth(30)
-        self.about_button.clicked.connect(self.about_window)
+        self.about_button.clicked.connect(self.about_window_open)
         self.header_sitemap_lineedit.textChanged.connect(self.check_correct_url)
         self.header_sitemap_lineedit.setFixedHeight(24)
         self.project_name_lineedit.textChanged.connect(self.check_name_project)
@@ -52,6 +54,7 @@ class GUI_worker(MainWnd):
         self.skin_combo.currentTextChanged.connect(self.go_enable)
         self.fill_skin_combo()
         self.skin_combo.setFixedHeight(24)
+
 
     def fill_skin_combo(self):
         for item in self.regex_patern.keys():
@@ -180,8 +183,12 @@ class GUI_worker(MainWnd):
         self.skin_combo.setEnabled(False)
         self.not_ready_go_button()
 
-    def about_window(self):
-        self.about_window = About_window(self)
+    def about_window_open(self):
+        self.about_window_widget.scroll_lay.show()
+
+    def closeEvent(self, e):
+        if self.about_window_widget.isEnabled():
+            self.about_window_widget.scroll_lay.close()
 
 
 # Main
