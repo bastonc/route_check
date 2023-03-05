@@ -65,7 +65,7 @@ class CheckerRouteThread(QThread):
                  output_to_csv: classmethod):
         super().__init__()
         self.exclude_route = exclude_route
-        self.exclude_url_list = exclude_url_list
+        self.exclude_url_list = [str(url).replace("https://new.", "").replace("https://www.", "").replace("https://m.", "") for url in exclude_url_list]
         self.articles_list = articles_list
         self.article_url_list = None
         self.skin = skin
@@ -121,7 +121,7 @@ class CheckerRouteThread(QThread):
         if len(all_bc_link) <= 1:
             return True
         for a in all_bc_link:
-            if a.get("href") in exclude_url_list:
+            if str(a.get("href")).replace("https://new.","").replace("https://www.","").replace("https://m.", "") in exclude_url_list:
                 return True
         return False
 
@@ -145,14 +145,18 @@ class CheckerRouteThread(QThread):
             route_name = None
             for article, url in url_dict.items():
                 num += 1
+                redirect = False
                 source_code = self.get_source_code(url, False, True)
                 if source_code.status_code == 200:
                     route_name = self.get_route_name(source_code.text)
                     if route_name not in self.exclude_route and len(source_code.history) > 0 and  self.get_article_from_url(source_code.history[0].url, self.regex_pattern) != self.get_article_from_url(source_code.url,
                                                                                                                               self.regex_pattern):
-                        route_name += f" - 301 to {self.get_article_from_url(source_code.url, self.regex_pattern) if self.get_article_from_url(source_code.url, self.regex_pattern) is not None else route_name}"
-                    if route_name not in self.exclude_route and not self.check_breadcrumbs(source_code.text, self.exclude_url_list, class_name_bc):
-                        route_name += " - bad"
+                        route_name += f" 301 to {self.get_article_from_url(source_code.url, self.regex_pattern) if self.get_article_from_url(source_code.url, self.regex_pattern) is not None else route_name}"
+                        redirect = True
+                    if route_name not in self.exclude_route and \
+                            not self.check_breadcrumbs(source_code.text, self.exclude_url_list, class_name_bc) and \
+                            not redirect:
+                        route_name += " valid"
                     self.output_to_csv(matches_dict={article: route_name})
                 else:
                     self.output_to_csv(matches_dict={article: source_code.status_code})

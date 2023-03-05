@@ -7,10 +7,11 @@ import traceback
 from PyQt5.QtCore import pyqtSlot, QThread
 from PyQt5.QtGui import QIcon
 
-from utlity.check_route_thread import CsvWorker, CheckerRouteThread, OutputCsv
+from check_route_thread import CsvWorker, CheckerRouteThread, OutputCsv
 from PyQt5.QtWidgets import QFileDialog, QApplication, QMessageBox
 
-from utlity.main_wnd_route import CheckRouteWnd
+from main_wnd_route import CheckRouteWnd
+from routeChekerAbout import AboutRouteChecker
 
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
@@ -36,6 +37,7 @@ class GUI_worker(CheckRouteWnd):
         self.thread_list = {}
         self.output_file_path = ""
         self.console_counter = 0
+        self.about_window_widget = AboutRouteChecker()
         self.init_data()
 
     def init_data(self):
@@ -63,6 +65,7 @@ class GUI_worker(CheckRouteWnd):
         self.threads_count_spin_box.setMaximum(5)
         self.threads_count_spin_box.setMinimum(1)
         self.result_button.clicked.connect(self.open_result_directory)
+        self.about_button.clicked.connect(self.about_window_open)
         self.store_prev_session()
 
     def read_config_data(self):
@@ -108,7 +111,7 @@ class GUI_worker(CheckRouteWnd):
         self.output_file_path = "".join(item_path + "/" for item_path in file_path_split[:len(file_path_split) - 1])
         self.output_cvs_thread = QThread()
         self.output_csv = OutputCsv(
-            str(self.output_file_path) + file_path_split[-1].replace(".csv", "") + "-routeCheker-out.csv")
+            str(self.output_file_path) + file_path_split[-1].replace(".csv", "") + "-routeCheker-result.csv")
         self.output_cvs_thread.started.connect(self.output_csv.init_output_csv)
         self.output_cvs_thread.start()
 
@@ -224,6 +227,12 @@ class GUI_worker(CheckRouteWnd):
         output_file_path = self.output_file_path.replace("/", "\\")
         subprocess.Popen(f'explorer {output_file_path}')
 
+    def about_window_open(self):
+        self.about_window_widget.scroll_lay.show()
+
+    def closeEvent(self, e):
+        if self.about_window_widget.isEnabled():
+            self.about_window_widget.scroll_lay.close()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
